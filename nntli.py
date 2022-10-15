@@ -45,14 +45,13 @@ class RMinTimeWeight(object):
         return w
 
 
-class ReluMax(object):
+class SparseMax(object):
     def __init__(self, beta, a, dim):
         self.beta = beta
         self.a = a
-        self.relu = torch.nn.ReLU()
         self.dim = dim
     def f(self, r):
-        robust = self.relu(torch.exp(self.beta * r)-self.a)
+        robust = torch.exp(self.beta * r)-self.a
         return robust
     def forward(self, r):
         r = self.f(r)
@@ -64,8 +63,8 @@ class ReluMax(object):
 
 
 class NormRobust(object):
-    def __init__(self, relumax, scale):
-        self.relumax = relumax
+    def __init__(self, smax, scale):
+        self.smax = smax
         self.scale = scale
     def forward(self, s, r, d):
         eps = 1e-12
@@ -73,7 +72,7 @@ class NormRobust(object):
         mx = torch.abs(torch.max(r_w,dim=d,keepdim=True)[0])
         r_re = self.scale*torch.div(r_w,(mx+eps)) #rescale r
         # r_re = r
-        s_norm = self.relumax.forward(r_re) # weight of r_re
+        s_norm = self.smax.forward(r_re) # weight of r_re
         return s_norm
 
 
@@ -108,9 +107,9 @@ class Disjunction(object):
                 robust[(denominator_old==0)] = torch.min(robust[(denominator_old!=0)])
         return robust
 
-    def init_relumax(self, beta, a, scale, dim):
-        self.relumax = ReluMax(beta, a, dim)
-        self.normalize_robust = NormRobust(self.relumax, scale)
+    def init_sparsemax(self, beta, a, scale, dim):
+        self.smax = SparseMax(beta, a, dim)
+        self.normalize_robust = NormRobust(self.smax, scale)
 
 
 class Conjunction(object): # AND, ALWAYS
@@ -144,9 +143,9 @@ class Conjunction(object): # AND, ALWAYS
                 robust[(denominator_old==0)] = torch.min(robust[(denominator_old!=0)])
         return robust
 
-    def init_relumax(self, beta, a, scale, dim):
-        self.relumax = ReluMax(beta, a, dim)
-        self.normalize_robust = NormRobust(self.relumax, scale)
+    def init_sparsemax(self, beta, a, scale, dim):
+        self.smax = SparseMax(beta, a, dim)
+        self.normalize_robust = NormRobust(self.smax, scale)
 
 
 
@@ -209,9 +208,9 @@ class Eventually(object):
             trace = self.robustness(X,w,t1,t2)
         return trace
 
-    def init_relumax(self, beta, a, scale, dim):
-        self.relumax = ReluMax(beta, a, dim)
-        self.normalize_robust = NormRobust(self.relumax, scale)
+    def init_sparsemax(self, beta, a, scale, dim):
+        self.smax = SparseMax(beta, a, dim)
+        self.normalize_robust = NormRobust(self.smax, scale)
     
 
 
@@ -274,6 +273,6 @@ class Always(object):
             trace = self.robustness(X,w,t1,t2)
         return trace
 
-    def init_relumax(self, beta, a, scale, dim):
-        self.relumax = ReluMax(beta, a, dim)
-        self.normalize_robust = NormRobust(self.relumax, scale)
+    def init_sparsemax(self, beta, a, scale, dim):
+        self.smax = SparseMax(beta, a, dim)
+        self.normalize_robust = NormRobust(self.smax, scale)

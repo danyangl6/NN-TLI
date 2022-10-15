@@ -4,7 +4,7 @@ import os
 import pickle
 import numpy as np
 from random import shuffle
-from tlnn import *
+from nntli import *
 
 
 def get_t1_t2(w):

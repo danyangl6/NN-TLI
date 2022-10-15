@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import random as rd
 import pickle
 from time import time
-from tlnn import *
+from nntli import *
 from utils import *
 
 torch.set_default_dtype(torch.float64)
 
-def tlnn_train(train_data, train_label, val_data, val_label, dataname):
+def nntli_train(train_data, train_label, val_data, val_label, dataname):
     nsample = train_data.shape[0]
     dim = train_data.shape[1]
     length = train_data.shape[-1]
@@ -51,12 +51,12 @@ def tlnn_train(train_data, train_label, val_data, val_label, dataname):
     fn = int(f_num/2)
     for i in range(fn):
         Formula.append(Eventually(a[j],b[j],tl1,tl2))
-        Formula[j].init_relumax(beta,am,scale,2)
+        Formula[j].init_sparsemax(beta,am,scale,2)
         Spatial.append('F')
         j += 1
     for i in range(fn):
         Formula.append(Always(a[j],b[j],tl1,tl2))
-        Formula[j].init_relumax(beta,am,scale,2)
+        Formula[j].init_sparsemax(beta,am,scale,2)
         Spatial.append('G')
         j += 1
 
@@ -64,12 +64,12 @@ def tlnn_train(train_data, train_label, val_data, val_label, dataname):
     am = 0
     scale = 1.1
     conjunc = Conjunction()
-    conjunc.init_relumax(beta,am,scale,1)
+    conjunc.init_sparsemax(beta,am,scale,1)
     beta = 1
     am = 0
     scale = 1
     disjunc = Disjunction()
-    disjunc.init_relumax(beta,am,scale,1)
+    disjunc.init_sparsemax(beta,am,scale,1)
 
     optimizer1 = torch.optim.Adam([Wc], lr=0.1)
     optimizer2 = torch.optim.Adam([b], lr=0.1)
