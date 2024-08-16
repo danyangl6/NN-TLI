@@ -48,6 +48,7 @@ def nntli_train(train_data, train_label, val_data, val_label, dataname):
     beta = 1
     am = 0
     scale = 2.5
+    # scale = 1
     fn = int(f_num/2)
     for i in range(fn):
         Formula.append(Eventually(a[j],b[j],tl1,tl2))
@@ -63,6 +64,7 @@ def nntli_train(train_data, train_label, val_data, val_label, dataname):
     beta = 1
     am = 0
     scale = 1.1
+    # scale = 1
     conjunc = Conjunction()
     conjunc.init_sparsemax(beta,am,scale,1)
     beta = 1
@@ -160,7 +162,7 @@ def nntli_train(train_data, train_label, val_data, val_label, dataname):
         end = time()
         training_time += end - start
 
-        if epoch % 10 ==0:
+        if epoch % 100 ==0:
             x = val_data
             y = val_label
             r1o = torch.empty((val_nsample,f_num,1))
@@ -177,12 +179,14 @@ def nntli_train(train_data, train_label, val_data, val_label, dataname):
             acc_val = sum(val_label==Rl[:,0])/(val_nsample)
             acc_stl = STL_accuracy(x,y,Formula,Spatial,W1s,Wcs,Wds,clip)
             acc = acc_stl
+            acc = acc_val
             print('epoch_num = {epoch}, loss = {l}, accuracy_val = {acc_val}, accuracy_stl = {acc_stl}'.format(epoch=epoch,l=l, acc_val=acc_val, acc_stl=acc_stl))
             if acc>acc_best:
                 best_training_time = training_time
             if acc>=acc_best:
                 acc_best = acc
                 Wcss, Wdss = extract_formula(train_data,train_label,Formula,conjunc,disjunc,clip,W1s,Wcs,Wds)
+                print_formula(Formula, Spatial, W1s, Wcss, Wdss)
                 f = open('W_best_'+dataname+'.pkl', 'wb')
                 pickle.dump([W1s, Wcss, Wdss, a, b, t1, t2, Spatial], f)
                 f.close()

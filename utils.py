@@ -29,6 +29,48 @@ def get_t1_t2(w):
     return tc1, tc2
 
 
+def print_formula(Formula, Spatial, W1s, Wcs, Wds):
+    f_num = W1s.shape[0]
+    f_dis = Wds.shape[0]
+    Wcs = Wcs.detach()
+    Wds = Wds.detach()
+    formula_T = [] # temporal operator
+    formula_time = [] # time interval
+    formula_const = [] # x, y
+    formula_xy = []
+    formula_sym = [] # >, <
+    for k in range(f_num):
+        formula_T.append(Spatial[k])
+        t11, t12 = get_t1_t2(W1s[k])
+        formula_time.append([t11,t12])
+        if Formula[k].A[0,0]==1:
+            formula_xy.append('x')
+            formula_sym.append('>')
+            formula_const.append(Formula[k].b.item())
+        elif Formula[k].A[0,0]==-1:
+            formula_xy.append('x')
+            formula_sym.append('<')
+            formula_const.append(-Formula[k].b.item())
+        elif Formula[k].A[0,1]==1:
+            formula_xy.append('y')
+            formula_sym.append('>')
+            formula_const.append(Formula[k].b.item())
+        elif Formula[k].A[0,1]==-1:
+            formula_xy.append('y')
+            formula_sym.append('<')
+            formula_const.append(-Formula[k].b.item())
+    dis_index = torch.where(Wds==1)[0]
+    for indexd, i in enumerate(dis_index):
+        if indexd > 0 and len(dis_index)>1:
+            print(' or ')
+        con_index = torch.where(Wcs[i]==1)[0]
+        for indexc, j in enumerate(con_index):
+            if indexc > 0 and len(con_index)>1:
+                print(' and ')
+            print(formula_T[j]+"["+str(formula_time[j][0])+","+str(formula_time[j][1])+"]"
+            +formula_xy[j]+formula_sym[j]+'{:.2f}'.format(formula_const[j]))
+                
+
 def extract_formula(x,y,Formula1,conjunc,disjunc,clip,W1s,Wcs,Wds):
     _,_,acc_val = validation_accuracy(x,y,Formula1,conjunc,disjunc,clip,W1s,Wcs,Wds)
     f_num = W1s.shape[0]
